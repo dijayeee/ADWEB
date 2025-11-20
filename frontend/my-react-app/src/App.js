@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthContext, AuthProvider } from './AuthContext';
@@ -68,15 +69,110 @@ function AppRoutes() {
       </Routes>
     </>
   );
+=======
+import './App.css';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { CartProvider } from './Context/CartContext';
+import { AuthProvider, useAuth } from './Context/AuthContext';
+import HomePage from './HomePage';
+import Login from './Login';
+import SignUp from './Pages/SignUp';
+import WomenShop from './Pages/WomenShop';
+import MenShop from './Pages/MenShop';
+import KidsShop from './Pages/KidsShop';
+import BabyShop from './Pages/BabyShop';
+import Cart from './Pages/Cart';
+import Order from './Pages/Order';
+import Profile from './Pages/Profile';
+import Address from './Pages/Address';
+import ChangePassword from './Pages/ChangePassword';
+import MyPurchase from './Pages/MyPurchase';
+import Admin from './Pages/Admin';
+import SearchResults from './Pages/SearchResults';
+import ProductDetail from './Pages/ProductDetail';
+
+function PrivateRoute({ children }) {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+}
+
+function AdminRoute({ children }) {
+  const { user } = useAuth();
+  const isAdmin = user?.username === 'admin';
+  return isAdmin ? children : <Navigate to="/login" replace />;
+>>>>>>> 9676373 (Initial commit)
 }
 
 function App() {
   return (
+<<<<<<< HEAD
     <Router>
       <AuthProvider>
         <AppRoutes />
       </AuthProvider>
     </Router>
+=======
+    <AuthProvider>
+      <CartProvider>
+        <Router>
+          <Routes>
+          <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/home" element={<HomePage />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/women" element={<WomenShop />} />
+            <Route path="/men" element={<MenShop />} />
+            <Route path="/kids" element={<KidsShop />} />
+            <Route path="/baby" element={<BabyShop />} />
+            <Route path="/search" element={<SearchResults />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/order" element={<Order />} />
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <Admin />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <Profile />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/address"
+              element={
+                <PrivateRoute>
+                  <Address />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/change-password"
+              element={
+                <PrivateRoute>
+                  <ChangePassword />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/my-purchase"
+              element={
+                <PrivateRoute>
+                  <MyPurchase />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
+        </Router>
+      </CartProvider>
+    </AuthProvider>
+>>>>>>> 9676373 (Initial commit)
   );
 }
 
