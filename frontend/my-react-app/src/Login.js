@@ -87,9 +87,9 @@ function LoginPage() {
             />
 
             <div className="text-right">
-              <a href="#" className="text-sm text-blue-600 hover:underline">
-                Forget Password
-              </a>
+              <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">
+                Forgot Password
+              </Link>
             </div>
 
             {error && (

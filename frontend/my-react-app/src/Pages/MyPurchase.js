@@ -1,67 +1,55 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Header from '../Components/Header';
 import Footer from '../Components/Footer';
 import { useAuth } from '../Context/AuthContext';
 import api from '../config/axios';
-import { User as UserIcon, Package, Check } from 'lucide-react';
+import { Package, Check, User as UserIcon } from 'lucide-react';
 import OrderReceivedModal from '../Components/OrderReceivedModal';
 
 function MyPurchase() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { user: authUser } = useAuth();
+
   const [activeTab, setActiveTab] = useState('my-purchase');
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showReceivedModal, setShowReceivedModal] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
 
-  useEffect(() => {
-    if (location.pathname === '/my-purchase') {
-      setActiveTab('my-purchase');
-    }
-    fetchOrders();
-  }, [location.pathname]);
-
+  // Fetch orders from backend
   const fetchOrders = async () => {
     try {
-      setLoading(true);
-      if (authUser?.username) {
-        const response = await api.get(`/orders/user/${authUser.username}`);
-        if (response.data.success) {
-          setOrders(response.data.orders);
-        }
-      }
+      const res = await api.get('/orders/my-orders');
+      setOrders(res.data.orders || []);
     } catch (err) {
       console.error('Error fetching orders:', err);
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
-  const handleMarkAsReceived = async (orderId) => {
-    try {
-      setLoading(true);
-      const response = await api.put(`/orders/${orderId}/status`, { status: 'delivered' });
-      if (response.data.success) {
-        await fetchOrders(); // Refresh orders list
-        setShowReceivedModal(false);
-        setSelectedOrderId(null);
-      } else {
-        alert(response.data.error || 'Failed to mark order as received');
-      }
-    } catch (err) {
-      console.error('Error marking order as received:', err);
-      alert('Error marking order as received');
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    fetchOrders();
+  }, []);
 
+  // Open modal
   const openReceivedModal = (orderId) => {
     setSelectedOrderId(orderId);
     setShowReceivedModal(true);
+  };
+
+  // Confirm received
+  const handleMarkAsReceived = async () => {
+    try {
+      setLoading(true);
+      await api.put(`/orders/mark-received/${selectedOrderId}`);
+      setShowReceivedModal(false);
+      setSelectedOrderId(null);
+      fetchOrders();
+    } catch (err) {
+      console.error('Error marking order as received:', err);
+    }
+    setLoading(false);
   };
 
   if (loading) {
@@ -81,18 +69,28 @@ function MyPurchase() {
       <Header />
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
           <div className="flex flex-col md:flex-row gap-6">
+
             {/* Sidebar */}
             <div className="w-full md:w-64 bg-white rounded-lg shadow-sm p-4 h-fit">
               <div className="flex items-center gap-3 mb-6 pb-6 border-b">
-                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                  <UserIcon className="h-6 w-6 text-gray-400" />
+                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                  {authUser?.profileImage ? (
+                    <img
+                      src={authUser.profileImage}
+                      alt="Profile"
+                      className="w-12 h-12 object-cover rounded-full"
+                    />
+                  ) : (
+                    <UserIcon className="h-6 w-6 text-gray-400" />
+                  )}
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900">{authUser?.username || 'User'}</p>
                   <button
                     onClick={() => navigate('/profile')}
-                    className="text-xs text-black hover:text-gray-700"
+                    className="text-xs text-black hover:text-gray-500"
                   >
                     Edit Profile
                   </button>
@@ -101,21 +99,24 @@ function MyPurchase() {
 
               <div className="space-y-1">
                 <p className="text-xs font-semibold text-black uppercase mb-2">My Account</p>
+
                 <button
                   onClick={() => navigate('/profile')}
-                  className="w-full text-left px-4 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 transition"
+                  className="w-full text-left px-4 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100"
                 >
                   Profile
                 </button>
+
                 <button
                   onClick={() => navigate('/address')}
-                  className="w-full text-left px-4 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 transition"
+                  className="w-full text-left px-4 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100"
                 >
                   Address
                 </button>
+
                 <button
                   onClick={() => navigate('/change-password')}
-                  className="w-full text-left px-4 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 transition"
+                  className="w-full text-left px-4 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100"
                 >
                   Change Password
                 </button>
@@ -147,7 +148,7 @@ function MyPurchase() {
                   <p className="text-gray-600 mb-4">No orders yet</p>
                   <button
                     onClick={() => navigate('/home')}
-                    className="px-4 py-2 bg-black text-white rounded-lg font-semibold hover:bg-gray-500 transition"
+                    className="px-4 py-2 bg-black text-white rounded-lg font-semibold hover:bg-gray-500"
                   >
                     Start Shopping
                   </button>
@@ -155,44 +156,60 @@ function MyPurchase() {
               ) : (
                 <div className="space-y-4">
                   {orders.map((order, index) => (
-                    <div key={order._id || order.id || index} className="border border-gray-200 rounded-lg p-4">
+                    <div
+                      key={order._id || index}
+                      className="border border-gray-200 rounded-lg p-4"
+                    >
                       <div className="flex justify-between items-start mb-4">
                         <div>
-                          <p className="font-semibold text-gray-900">Order ID: {order._id || order.id}</p>
+                          <p className="font-semibold text-gray-900">
+                            Order ID: {order._id}
+                          </p>
                           <p className="text-sm text-gray-600">
                             {order.createdAt
                               ? new Date(order.createdAt).toLocaleString()
                               : 'Date not available'}
                           </p>
+
                           <p className="text-xs text-gray-500 mt-1">
-                            Status: <span className={`font-semibold ${
-                              order.status === 'pending' ? 'text-yellow-600' :
-                              order.status === 'processing' ? 'text-blue-600' :
-                              order.status === 'shipped' ? 'text-purple-600' :
-                              order.status === 'delivered' ? 'text-green-600' :
-                              'text-red-600'
-                            }`}>
-                              {order.status || 'pending'}
+                            Status:{' '}
+                            <span
+                              className={`font-semibold ${
+                                order.status === 'pending'
+                                  ? 'text-yellow-600'
+                                  : order.status === 'processing'
+                                  ? 'text-blue-600'
+                                  : order.status === 'shipped'
+                                  ? 'text-purple-600'
+                                  : order.status === 'delivered'
+                                  ? 'text-green-600'
+                                  : 'text-red-600'
+                              }`}
+                            >
+                              {order.status}
                             </span>
                           </p>
                         </div>
+
                         <div className="text-right">
                           <p className="font-semibold text-gray-900">
-                            ${Number(order.total || 0).toFixed(2)}
+                            ₱{Number(order.total || 0).toFixed(2)}
                           </p>
                           <p className="text-sm text-gray-600">
                             {order.items?.length || 0} item(s)
                           </p>
-                          {(order.status === 'shipped' || order.status === 'processing') && (
+
+                          {(order.status === 'shipped' ||
+                            order.status === 'processing') && (
                             <button
-                              onClick={() => openReceivedModal(order._id || order.id)}
-                              disabled={loading}
-                              className="mt-2 px-4 py-2 rounded-md bg-green-600 text-white text-sm font-semibold hover:bg-green-700 disabled:bg-gray-400 transition flex items-center gap-2 ml-auto"
+                              onClick={() => openReceivedModal(order._id)}
+                              className="mt-2 px-4 py-2 rounded-md bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition flex items-center gap-2 ml-auto"
                             >
                               <Check className="h-4 w-4" />
                               Order Received
                             </button>
                           )}
+
                           {order.status === 'delivered' && (
                             <div className="mt-2 px-3 py-1 rounded-md bg-green-100 text-green-700 text-xs font-semibold flex items-center gap-1 ml-auto w-fit">
                               <Check className="h-3 w-3" />
@@ -204,6 +221,7 @@ function MyPurchase() {
 
                       <div className="border-t pt-4">
                         <p className="text-sm font-medium text-gray-700 mb-2">Items:</p>
+
                         <div className="space-y-2">
                           {order.items?.map((item, itemIndex) => (
                             <div key={itemIndex} className="flex items-center gap-3">
@@ -214,14 +232,19 @@ function MyPurchase() {
                                   className="w-16 h-16 object-cover rounded"
                                 />
                               )}
+
                               <div className="flex-1">
-                                <p className="text-sm font-medium text-gray-900">{item.name}</p>
-                                <p className="text-xs text-gray-600">
-                                  Quantity: {item.quantity} × ${item.price?.toFixed(2) || '0.00'}
+                                <p className="text-sm font-medium text-gray-900">
+                                  {item.name}
                                 </p>
-                                {item.selectedColor && item.selectedSize && (
+                                <p className="text-xs text-gray-600">
+                                  Quantity: {item.quantity} × ₱
+                                  {item.price?.toFixed(2)}
+                                </p>
+
+                                {(item.selectedColor || item.selectedSize) && (
                                   <p className="text-xs text-gray-500">
-                                    {item.selectedColor}, {item.selectedSize}
+                                    {item.selectedColor} {item.selectedSize}
                                   </p>
                                 )}
                               </div>
@@ -234,9 +257,11 @@ function MyPurchase() {
                 </div>
               )}
             </div>
+
           </div>
         </div>
       </div>
+
       <OrderReceivedModal
         isOpen={showReceivedModal}
         orderId={selectedOrderId}
@@ -247,10 +272,10 @@ function MyPurchase() {
         }}
         isLoading={loading}
       />
+
       <Footer />
     </>
   );
 }
 
 export default MyPurchase;
-

@@ -211,6 +211,7 @@ function Admin() {
       if (response.data.success) {
         await fetchProducts(); // Refresh products list
         resetForm();
+        // Optionally, show a success message or notification here
       } else {
         setError(response.data.error || 'Failed to save product');
       }

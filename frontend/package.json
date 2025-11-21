@@ -1,5 +1,10 @@
 {
-  "dependencies": {
-    "axios": "^1.13.2"
+  "name": "frontend",
+  "private": true,
+  "scripts": {
+    "start": "npm run start --prefix my-react-app",
+    "build": "npm run build --prefix my-react-app",
+    "test": "npm run test --prefix my-react-app",
+    "install": "npm install --prefix my-react-app"
   }
 }

@@ -151,7 +151,7 @@ function Cart() {
                           <span className="text-gray-500 ml-2">• {item.stock} available</span>
                         )}
                       </p>
-                      <p className="text-2xl font-bold text-gray-900">${item.price.toFixed(2)}</p>
+                      <p className="text-2xl font-bold text-gray-900">₱{item.price.toFixed(2)}</p>
                     </div>
 
                     <div className="flex flex-col md:flex-row items-center gap-4">
@@ -185,7 +185,7 @@ function Cart() {
                     <div className="text-right">
                       <p className="text-sm text-gray-600">Subtotal</p>
                       <p className="text-xl font-bold text-gray-900">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        ₱{(item.price * item.quantity).toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -202,20 +202,20 @@ function Cart() {
                 <div className="space-y-4 mb-6">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal</span>
-                    <span className="font-semibold">${getCartTotal().toFixed(2)}</span>
+                    <span className="font-semibold">₱{getCartTotal().toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Shipping</span>
-                    <span className="font-semibold">$10.00</span>
+                    <span className="font-semibold">₱10.00</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Tax</span>
-                    <span className="font-semibold">${(getCartTotal() * 0.1).toFixed(2)}</span>
+                    <span className="font-semibold">₱{(getCartTotal() * 0.1).toFixed(2)}</span>
                   </div>
                   <div className="border-t pt-4 flex justify-between">
                     <span className="text-xl font-bold text-gray-900">Total</span>
                     <span className="text-xl font-bold text-gray-900">
-                      ${(getCartTotal() + 10 + getCartTotal() * 0.1).toFixed(2)}
+                      ₱{(getCartTotal() + 10 + getCartTotal() * 0.1).toFixed(2)}
                     </span>
                   </div>
                 </div>

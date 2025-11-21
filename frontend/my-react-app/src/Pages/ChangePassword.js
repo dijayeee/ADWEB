@@ -1,16 +1,16 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../Components/Header';
 import Footer from '../Components/Footer';
 import { useAuth } from '../Context/AuthContext';
 import api from '../config/axios';
-import { User as UserIcon } from 'lucide-react';
+import { UserIcon } from '@heroicons/react/24/outline';
 
 function ChangePassword() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { user: authUser } = useAuth();
-  const [activeTab, setActiveTab] = useState('change-password');
+
+  const [activeTab] = useState('change-password');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -21,57 +21,45 @@ function ChangePassword() {
     confirmPassword: ''
   });
 
-  useEffect(() => {
-    if (location.pathname === '/change-password') {
-      setActiveTab('change-password');
-    }
-  }, [location.pathname]);
-
+  // Handle input changes
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setError('');
-    setSuccess('');
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
+  // Submit password change
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
+    setLoading(true);
 
+    // Password match validation
     if (formData.newPassword !== formData.confirmPassword) {
-      setError('New passwords do not match');
-      return;
-    }
-
-    if (formData.newPassword.length < 6) {
-      setError('New password must be at least 6 characters long');
+      setError('New password and confirmation do not match.');
+      setLoading(false);
       return;
     }
 
     try {
-      setLoading(true);
-      const response = await api.put(`/users/change-password/${authUser?.username}`, {
+      await api.post('/auth/change-password', {
         currentPassword: formData.currentPassword,
         newPassword: formData.newPassword
       });
 
-      if (response.data.success) {
-        setSuccess('Password changed successfully');
-        setFormData({
-          currentPassword: '',
-          newPassword: '',
-          confirmPassword: ''
-        });
-      } else {
-        setError(response.data.error || 'Failed to change password');
-      }
+      setSuccess('Password changed successfully!');
+      setFormData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
     } catch (err) {
-      console.error('Error changing password:', err);
-      setError(err.response?.data?.error || err.message || 'Error changing password');
-    } finally {
-      setLoading(false);
+      setError(err.response?.data?.message || 'Error changing password.');
     }
+
+    setLoading(false);
   };
 
   return (
@@ -80,14 +68,25 @@ function ChangePassword() {
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col md:flex-row gap-6">
+
             {/* Sidebar */}
             <div className="w-full md:w-64 bg-white rounded-lg shadow-sm p-4 h-fit">
               <div className="flex items-center gap-3 mb-6 pb-6 border-b">
-                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                  <UserIcon className="h-6 w-6 text-gray-400" />
+                <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                  {authUser?.profileImage ? (
+                    <img
+                      src={authUser.profileImage}
+                      alt="Profile"
+                      className="w-12 h-12 object-cover rounded-full"
+                    />
+                  ) : (
+                    <UserIcon className="h-6 w-6 text-gray-400" />
+                  )}
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900">{authUser?.username || 'User'}</p>
+                  <p className="font-semibold text-gray-900">
+                    {authUser?.username || 'User'}
+                  </p>
                   <button
                     onClick={() => navigate('/profile')}
                     className="text-xs text-black hover:text-gray-500"
@@ -97,6 +96,7 @@ function ChangePassword() {
                 </div>
               </div>
 
+              {/* Sidebar Navigation */}
               <div className="space-y-1">
                 <p className="text-xs font-semibold text-black uppercase mb-2">My Account</p>
                 <button
@@ -137,7 +137,7 @@ function ChangePassword() {
             {/* Main Content */}
             <div className="flex-1 bg-white rounded-lg shadow-sm p-6">
               <h1 className="text-2xl font-bold text-gray-900 mb-2">Change Password</h1>
-              <p className="text-gray-600 mb-6">Update your password to keep your account secure</p>
+              <p className="text-gray-600 mb-6">Update your password to keep your account secure.</p>
 
               {error && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
@@ -209,6 +209,7 @@ function ChangePassword() {
                   </button>
                 </div>
               </form>
+
             </div>
           </div>
         </div>
@@ -219,4 +220,3 @@ function ChangePassword() {
 }
 
 export default ChangePassword;
-

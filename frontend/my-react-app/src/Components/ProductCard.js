@@ -50,9 +50,7 @@ function ProductCard({ product }) {
           {product.name}
         </h3>
         <p className="text-sm text-gray-600 mb-2">{product.category}</p>
-        {product.description && (
-          <p className="text-xs text-gray-500 mb-2 line-clamp-2">{product.description}</p>
-        )}
+        {/* Product description removed for card view */}
         <div className="mb-2">
           <p className="text-sm text-gray-600">
             <span className={`font-semibold ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
